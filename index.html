@@ -14,17 +14,21 @@
         <a href="pagina2.html">Quadro Branco</a>
         <a href="pagina3.html">Diário</a>
         <a href="pagina4.html">Contato</a>
+        <a href="pagina5.html">Atualizações</a>
     </nav>
     <header>
         <h1>Meu Codex</h1>
         <p>Meu local de organização</p>
         <p id="pontos">Pontos: 0</p>
-        <button onclick="logout()">Sair</button>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button onclick="abrirConfiguracoes()" title="Configurações">⚙️ Configurações</button>
+            <button onclick="logout()">Sair</button>
+        </div>
     </header>
 
 <button onclick="exportarDados()" class="export-btn">Exportar Dados</button>
 <button onclick="importarDados()" class="import-btn">Importar Dados</button>
-<input type="file" id="import-file" style="display: none;" onchange="handleFileImport(event)">
+<input type="file" id="import-file" style="display: none;">
 
     <div id="login-container">
         <h2>Login</h2>
@@ -52,8 +56,10 @@
             <h3>Tarefas Diárias</h3>
             <ul id="tarefas-diarias"></ul>
             <input type="text" id="nova-tarefa-diaria" placeholder="Nova tarefa diária">
-            <button onclick="adicionarTarefaDiaria()">Adicionar Tarefa Diária</button>
-            <button onclick="mostrarGerenciarTarefas()">Gerenciar Tarefas Diárias</button>
+            <div class="button-group">
+                <button onclick="adicionarTarefaDiaria()">Adicionar Tarefa Diária</button>
+                <button onclick="mostrarGerenciarTarefas()">Gerenciar Tarefas Diárias</button>
+            </div>
             <div id="gerenciar-tarefas" style="display: none;">
                 <h4>Remover Tarefas Diárias</h4>
                 <ul id="lista-tarefas-gerenciar"></ul>

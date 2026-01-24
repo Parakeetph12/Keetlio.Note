@@ -22,19 +22,99 @@ function loadUserList() {
         li.textContent = 'Nenhum usuário cadastrado';
         li.style.color = '#888';
         li.style.cursor = 'default';
+        li.style.justifyContent = 'flex-start';
         userList.appendChild(li);
         return;
     }
-    users.forEach(user => {
+    users.forEach((user, index) => {
         const li = document.createElement('li');
-        li.textContent = user.username;
-        li.onclick = () => {
+        
+        const userDiv = document.createElement('div');
+        userDiv.className = 'user-item';
+        
+        const usernamSpan = document.createElement('span');
+        usernamSpan.textContent = user.username;
+        usernamSpan.style.cursor = 'pointer';
+        usernamSpan.onclick = () => {
             document.getElementById('username').value = user.username;
             document.getElementById('password').focus();
         };
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '✕ Deletar';
+        deleteBtn.className = 'delete-user-btn';
+        deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            abrirConfirmacaoDeletar(index, user.username);
+        };
+        
+        userDiv.appendChild(usernamSpan);
+        userDiv.appendChild(deleteBtn);
+        li.appendChild(userDiv);
         userList.appendChild(li);
     });
 }
+
+function abrirConfirmacaoDeletar(index, username) {
+    let modal = document.getElementById('confirmation-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'confirmation-modal';
+        modal.className = 'confirmation-modal';
+        document.body.appendChild(modal);
+    }
+    
+    modal.innerHTML = `
+        <div class="confirmation-content">
+            <h3>Deletar Usuário</h3>
+            <p>Tem certeza que deseja deletar o usuário <strong>"${username}"</strong>?</p>
+            <p style="font-size: 12px; color: #ff6666;">⚠️ Todos os dados serão permanentemente removidos!</p>
+            <div class="confirmation-buttons">
+                <button class="confirm-delete" onclick="deletarUsuario(${index})">Deletar</button>
+                <button class="cancel-delete" onclick="fecharConfirmacao()">Cancelar</button>
+            </div>
+        </div>
+    `;
+    
+    modal.classList.add('active');
+}
+
+function fecharConfirmacao() {
+    const modal = document.getElementById('confirmation-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+function deletarUsuario(index) {
+    const users = getUsers();
+    const usernameDeletado = users[index].username;
+    
+    // Remover todos os dados do usuário
+    localStorage.removeItem(`tarefasPermanentes_${usernameDeletado}`);
+    localStorage.removeItem(`tarefasDiarias_${usernameDeletado}`);
+    localStorage.removeItem(`notas_${usernameDeletado}`);
+    localStorage.removeItem(`tarefasAdicionais_${usernameDeletado}`);
+    localStorage.removeItem(`links_${usernameDeletado}`);
+    localStorage.removeItem(`anotacoes_${usernameDeletado}`);
+    localStorage.removeItem(`pontos_${usernameDeletado}`);
+    localStorage.removeItem(`eventosCalendario_${usernameDeletado}`);
+    localStorage.removeItem(`ultimaAtualizacao_${usernameDeletado}`);
+    
+    // Remover usuário da lista
+    users.splice(index, 1);
+    saveUsers(users);
+    
+    // Se o usuário deletado era o logado, fazer logout
+    if (getCurrentUser() === usernameDeletado) {
+        logout();
+    }
+    
+    fecharConfirmacao();
+    loadUserList();
+    alert(`Usuário "${usernameDeletado}" deletado com sucesso!`);
+}
+
 function registerUser() {
     const username = document.getElementById('new-username')?.value.trim();
     const password = document.getElementById('new-password')?.value.trim();
@@ -830,6 +910,112 @@ function confirmarImportacao(dados) {
     document.getElementById('import-file').value = '';
 }
 
+// Sistema de Configurações
+function getButtonTheme() {
+    return localStorage.getItem('buttonTheme') || 'blue';
+}
+
+function setButtonTheme(theme) {
+    localStorage.setItem('buttonTheme', theme);
+    aplicarTemaGlobal();
+}
+
+function aplicarTemaGlobal() {
+    const tema = getButtonTheme();
+    const botoes = document.querySelectorAll('button');
+    
+    botoes.forEach(botao => {
+        botao.classList.remove('theme-blue', 'theme-red', 'theme-yellow', 'theme-green', 'theme-black', 'theme-white');
+        
+        // Não aplicar tema a botões especiais
+        if (!botao.classList.contains('delete-user-btn') && 
+            !botao.classList.contains('confirm-delete') && 
+            !botao.classList.contains('cancel-delete') &&
+            !botao.classList.contains('close-settings')) {
+            botao.classList.add(`theme-${tema}`);
+        }
+    });
+}
+
+function abrirConfiguracoes() {
+    let modal = document.getElementById('settings-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'settings-modal';
+        modal.className = 'settings-modal';
+        document.body.appendChild(modal);
+    }
+    
+    const temaAtual = getButtonTheme();
+    
+    modal.innerHTML = `
+        <div class="settings-content">
+            <h2>⚙️ Configurações</h2>
+            
+            <div class="settings-group">
+                <h3>Cor dos Botões</h3>
+                <div class="color-options">
+                    <div class="color-option">
+                        <input type="radio" id="theme-blue" name="theme" value="blue" ${temaAtual === 'blue' ? 'checked' : ''}>
+                        <label for="theme-blue">Azul</label>
+                        <div class="color-preview" style="background-color: #2563eb;"></div>
+                    </div>
+                    
+                    <div class="color-option">
+                        <input type="radio" id="theme-red" name="theme" value="red" ${temaAtual === 'red' ? 'checked' : ''}>
+                        <label for="theme-red">Vermelho</label>
+                        <div class="color-preview" style="background-color: #dc2626;"></div>
+                    </div>
+                    
+                    <div class="color-option">
+                        <input type="radio" id="theme-yellow" name="theme" value="yellow" ${temaAtual === 'yellow' ? 'checked' : ''}>
+                        <label for="theme-yellow">Amarelo</label>
+                        <div class="color-preview" style="background-color: #d97706;"></div>
+                    </div>
+                    
+                    <div class="color-option">
+                        <input type="radio" id="theme-green" name="theme" value="green" ${temaAtual === 'green' ? 'checked' : ''}>
+                        <label for="theme-green">Verde</label>
+                        <div class="color-preview" style="background-color: #16a34a;"></div>
+                    </div>
+                    
+                    <div class="color-option">
+                        <input type="radio" id="theme-black" name="theme" value="black" ${temaAtual === 'black' ? 'checked' : ''}>
+                        <label for="theme-black">Preto</label>
+                        <div class="color-preview" style="background-color: #1a1a1a;"></div>
+                    </div>
+                    
+                    <div class="color-option">
+                        <input type="radio" id="theme-white" name="theme" value="white" ${temaAtual === 'white' ? 'checked' : ''}>
+                        <label for="theme-white">Branco</label>
+                        <div class="color-preview" style="background-color: #f0f0f0; border: 2px solid #000000;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-buttons">
+                <button class="close-settings" onclick="fecharConfiguracoes()">Fechar</button>
+            </div>
+        </div>
+    `;
+    
+    modal.classList.add('active');
+    
+    // Adicionar event listeners aos radios
+    document.querySelectorAll('input[name="theme"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            setButtonTheme(e.target.value);
+        });
+    });
+}
+
+function fecharConfiguracoes() {
+    const modal = document.getElementById('settings-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
 // Inicialização
 window.onload = () => {
     loadUserList();
@@ -846,6 +1032,19 @@ window.onload = () => {
     if (document.getElementById('calendar')) {
         generateCalendar();
     }
+    
+    // Aplicar tema global ao carregar
+    aplicarTemaGlobal();
+    
+    // Observar mudanças de DOM e aplicar tema a novos botões
+    const observer = new MutationObserver(() => {
+        aplicarTemaGlobal();
+    });
+    
+    observer.observe(document.body, { 
+        childList: true, 
+        subtree: true 
+    });
 
     window.addEventListener('resize', () => {
         if (document.getElementById('drawer-content')?.classList.contains('active')) {
