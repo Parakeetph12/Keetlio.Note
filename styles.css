@@ -269,7 +269,7 @@ input[type="range"] {
 }
 
 #login-container {
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -280,6 +280,7 @@ input[type="range"] {
     border: 1px solid #2a2a2a;
     width: 400px;
     max-width: 90%;
+    z-index: 9999;
 }
 
 #login-form {
@@ -743,6 +744,7 @@ button.theme-white:hover {
         gap: 1px;
         padding: 5px;
         min-height: 300px;
+        max-width: 100%;
     }
     .calendar-day {
         font-size: 12px;
@@ -757,14 +759,120 @@ button.theme-white:hover {
         flex-direction: column;
         gap: 10px;
     }
+
+    .whiteboard-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    #whiteboard {
+        width: 100% !important;
+        max-width: 100%;
+        height: auto !important;
+        aspect-ratio: 16 / 10;
+    }
+
+    .fixed-section {
+        width: 90%;
+        margin: 10px auto;
+    }
+
+    .main-sections {
+        flex-direction: column;
+        padding: 10px;
+    }
 }
 
 @media (max-width: 480px) {
+    #login-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 95%;
+        max-width: 95%;
+        padding: 20px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    #login-form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #login-form h3 {
+        font-size: 16px;
+    }
+
+    #user-list {
+        max-height: 120px;
+    }
+
+    .calendar {
+        grid-template-columns: repeat(7, 1fr);
+        gap: 1px;
+        padding: 3px;
+    }
+
     .calendar-day {
         font-size: 10px;
         min-height: 30px;
+        padding: 3px 1px;
     }
     .calendar-header {
         font-size: 9px;
+        padding: 3px 1px;
+    }
+
+    #calendar-controls {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .drawer-control-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .drawer-control-group input,
+    .drawer-control-group label {
+        width: 100%;
+    }
+
+    #whiteboard {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 4 / 3;
+    }
+
+    .fixed-section {
+        width: 95%;
+        margin: 5px auto;
+        padding: 10px;
+    }
+
+    .main-sections {
+        flex-direction: column;
+        padding: 5px;
+        gap: 10px;
+    }
+
+    nav {
+        padding: 8px 10px;
+        gap: 8px;
+    }
+
+    nav a {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    header {
+        padding: 15px 10px;
+    }
+
+    h1 {
+        font-size: 20px;
     }
 }
