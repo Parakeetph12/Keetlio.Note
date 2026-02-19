@@ -18,14 +18,23 @@
     </nav>
     <header>
         <h1>Diário</h1>
-        <p>Escreva suas anotações.</p>
+        <p>Escreva suas anotações que você deseja manter.</p>
     </header>
+
+    <div style="display: flex; gap: 10px; justify-content: center;">
+        <button onclick="abrirConfiguracoes()" title="Configurações">Configurações</button>
+        <button onclick="logout()">Sair</button>
+        <button onclick="exportarDados()">Exportar Dados</button>
+        <button onclick="importarDados()">Importar Dados</button>
+        <input type="file" id="import-file" style="display: none;">
+    </div>
+
     <div class="fixed-section">
         <h3>Minhas Anotações</h3>
 
 <input type="text" id="diario-titulo" placeholder="Título da anotação">
 
-<textarea id="diario-texto" placeholder="Escreva sua anotação aqui..."></textarea>
+<textarea id="diario-texto" placeholder="Escreva sua anotação aqui!"></textarea>
 <button onclick="salvarAnotacao()">Salvar Anotação</button>
         <ul id="lista-anotacoes"></ul>
     </div>

@@ -1,17 +1,20 @@
-// Sistema de usuários
 function getUsers() {
     return JSON.parse(localStorage.getItem('codexUsers')) || [];
 }
+
 function saveUsers(users) {
     localStorage.setItem('codexUsers', JSON.stringify(users));
 }
+
 function getCurrentUser() {
     return localStorage.getItem('currentUser');
 }
+
 function getUserKey(key) {
     const user = getCurrentUser();
     return user ? `${key}_${user}` : key;
 }
+
 function loadUserList() {
     const userList = document.getElementById('user-list');
     if (!userList) return;
@@ -28,10 +31,8 @@ function loadUserList() {
     }
     users.forEach((user, index) => {
         const li = document.createElement('li');
-        
         const userDiv = document.createElement('div');
         userDiv.className = 'user-item';
-        
         const usernamSpan = document.createElement('span');
         usernamSpan.textContent = user.username;
         usernamSpan.style.cursor = 'pointer';
@@ -39,15 +40,13 @@ function loadUserList() {
             document.getElementById('username').value = user.username;
             document.getElementById('password').focus();
         };
-        
         const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = '✕ Deletar';
+        deleteBtn.textContent = 'Deletar';
         deleteBtn.className = 'delete-user-btn';
         deleteBtn.onclick = (e) => {
             e.stopPropagation();
             abrirConfirmacaoDeletar(index, user.username);
         };
-        
         userDiv.appendChild(usernamSpan);
         userDiv.appendChild(deleteBtn);
         li.appendChild(userDiv);
@@ -63,19 +62,17 @@ function abrirConfirmacaoDeletar(index, username) {
         modal.className = 'confirmation-modal';
         document.body.appendChild(modal);
     }
-    
     modal.innerHTML = `
         <div class="confirmation-content">
             <h3>Deletar Usuário</h3>
             <p>Tem certeza que deseja deletar o usuário <strong>"${username}"</strong>?</p>
-            <p style="font-size: 12px; color: #ff6666;">⚠️ Todos os dados serão permanentemente removidos!</p>
+            <p style="font-size: 12px; color: #ff6666;">Aviso: Todos os dados serão permanentemente removidos!</p>
             <div class="confirmation-buttons">
                 <button class="confirm-delete" onclick="deletarUsuario(${index})">Deletar</button>
                 <button class="cancel-delete" onclick="fecharConfirmacao()">Cancelar</button>
             </div>
         </div>
     `;
-    
     modal.classList.add('active');
 }
 
@@ -89,8 +86,6 @@ function fecharConfirmacao() {
 function deletarUsuario(index) {
     const users = getUsers();
     const usernameDeletado = users[index].username;
-    
-    // Remover todos os dados do usuário
     localStorage.removeItem(`tarefasPermanentes_${usernameDeletado}`);
     localStorage.removeItem(`tarefasDiarias_${usernameDeletado}`);
     localStorage.removeItem(`notas_${usernameDeletado}`);
@@ -100,16 +95,11 @@ function deletarUsuario(index) {
     localStorage.removeItem(`pontos_${usernameDeletado}`);
     localStorage.removeItem(`eventosCalendario_${usernameDeletado}`);
     localStorage.removeItem(`ultimaAtualizacao_${usernameDeletado}`);
-    
-    // Remover usuário da lista
     users.splice(index, 1);
     saveUsers(users);
-    
-    // Se o usuário deletado era o logado, fazer logout
     if (getCurrentUser() === usernameDeletado) {
         logout();
     }
-    
     fecharConfirmacao();
     loadUserList();
     alert(`Usuário "${usernameDeletado}" deletado com sucesso!`);
@@ -152,14 +142,12 @@ function registerUser() {
     loadUserList();
 }
 
-// Funções de autenticação
 function checkAuthState() {
     const currentUser = getCurrentUser();
     const loginContainer = document.getElementById('login-container');
     const mainSections = document.querySelector('.main-sections');
     const drawerContainer = document.querySelector('.drawer-container');
     const nav = document.querySelector('nav');
-
     if (currentUser) {
         if (loginContainer) loginContainer.style.display = 'none';
         if (mainSections) mainSections.style.display = 'flex';
@@ -176,17 +164,18 @@ function checkAuthState() {
 
 function checkPageAuth() {
     const currentUser = getCurrentUser();
-    const hasLoginContainer = document.getElementById('login-container');
-
-    if (!hasLoginContainer && !currentUser) {
+    const isLoginPage = window.location.pathname.endsWith('login.html');
+    if (!currentUser && !isLoginPage) {
+        window.location.href = 'login.html';
+        return false;
+    }
+    if (currentUser && isLoginPage) {
         window.location.href = 'index.html';
         return false;
     }
-
-    if (hasLoginContainer && currentUser) {
+    if (!isLoginPage) {
         checkAuthState();
     }
-
     return true;
 }
 
@@ -197,10 +186,13 @@ function login() {
     loginError.style.display = 'none';
     const users = getUsers();
     const user = users.find(u => u.username === username && u.password === password);
-
     if (user) {
         localStorage.setItem('currentUser', username);
-        checkAuthState();
+        if (window.location.pathname.endsWith('login.html')) {
+            window.location.href = 'index.html';
+        } else {
+            checkAuthState();
+        }
     } else {
         loginError.style.display = 'block';
     }
@@ -209,12 +201,11 @@ function login() {
 function logout() {
     localStorage.removeItem('currentUser');
     checkAuthState();
-    document.getElementById('username').value = '';
-    document.getElementById('password').value = '';
-    document.getElementById('gerenciar-tarefas').style.display = 'none';
+    if (!document.getElementById('login-container')) {
+        window.location.href = 'login.html';
+    }
 }
 
-// Funções de tarefas diárias
 function carregarTarefasDiarias() {
     const hoje = new Date().toLocaleDateString();
     const user = getCurrentUser();
@@ -248,6 +239,7 @@ function carregarTarefasDiarias() {
         lista.appendChild(li);
     });
 }
+
 function marcarTarefa(index) {
     const tarefas = JSON.parse(localStorage.getItem(getUserKey('tarefasDiarias'))) || [];
     if (!tarefas[index].concluida) {
@@ -269,10 +261,7 @@ function adicionarTarefaDiaria() {
         }
         const tarefas = JSON.parse(localStorage.getItem(getUserKey('tarefasDiarias'))) || [];
         if (!tarefas.some(t => t.tarefa === novaTarefa)) {
-            tarefas.push({
-                tarefa: novaTarefa,
-                concluida: false
-            });
+            tarefas.push({ tarefa: novaTarefa, concluida: false });
             localStorage.setItem(getUserKey('tarefasDiarias'), JSON.stringify(tarefas));
         }
         carregarTarefasDiarias();
@@ -280,6 +269,7 @@ function adicionarTarefaDiaria() {
         mostrarGerenciarTarefas();
     }
 }
+
 function mostrarGerenciarTarefas() {
     const gerenciarSection = document.getElementById('gerenciar-tarefas');
     const listaGerenciar = document.getElementById('lista-tarefas-gerenciar');
@@ -305,6 +295,7 @@ function mostrarGerenciarTarefas() {
     }
     gerenciarSection.style.display = gerenciarSection.style.display === 'none' ? 'block' : 'none';
 }
+
 function removerTarefaPermanente(index) {
     const tarefasPermanentes = JSON.parse(localStorage.getItem(getUserKey('tarefasPermanentes'))) || [];
     const tarefaRemovida = tarefasPermanentes.splice(index, 1)[0];
@@ -319,7 +310,6 @@ function removerTarefaPermanente(index) {
     carregarTarefasDiarias();
 }
 
-// Funções de notas, tarefas adicionais e links
 function carregarDados() {
     const notas = JSON.parse(localStorage.getItem(getUserKey('notas')) || '[]');
     const tarefasAdicionais = JSON.parse(localStorage.getItem(getUserKey('tarefasAdicionais')) || '[]');
@@ -343,6 +333,7 @@ function carregarDados() {
         listaLinks.appendChild(item);
     });
 }
+
 function criarItemComBotao(conteudo, index, tipo, isLink = false) {
     const item = document.createElement('li');
     if (isLink) {
@@ -361,6 +352,7 @@ function criarItemComBotao(conteudo, index, tipo, isLink = false) {
     item.appendChild(botaoExcluir);
     return item;
 }
+
 function excluirItem(index, tipo) {
     const dados = JSON.parse(localStorage.getItem(getUserKey(tipo)) || '[]');
     dados.splice(index, 1);
@@ -372,6 +364,7 @@ function excluirItem(index, tipo) {
     }
     atualizarLista(tipo);
 }
+
 function atualizarLista(tipo) {
     let lista;
     if (tipo === 'notas') {
@@ -390,38 +383,86 @@ function atualizarLista(tipo) {
         lista.appendChild(item);
     });
 }
-function adicionarNota() {
-    const nota = document.getElementById('nova-nota')?.value.trim();
+
+function adicionarNota(val) {
+    const nota = (val !== undefined ? val : document.getElementById('nova-nota')?.value).trim();
     if (nota !== '') {
         const notas = JSON.parse(localStorage.getItem(getUserKey('notas')) || '[]');
         notas.push(nota);
         localStorage.setItem(getUserKey('notas'), JSON.stringify(notas));
         atualizarLista('notas');
-        document.getElementById('nova-nota').value = '';
+        if (val === undefined) document.getElementById('nova-nota').value = '';
     }
 }
-function adicionarTarefaAdicional() {
-    const tarefa = document.getElementById('nova-tarefa-adicional')?.value.trim();
+
+function adicionarTarefaAdicional(val) {
+    const tarefa = (val !== undefined ? val : document.getElementById('nova-tarefa-adicional')?.value).trim();
     if (tarefa !== '') {
         const tarefasAdicionais = JSON.parse(localStorage.getItem(getUserKey('tarefasAdicionais')) || '[]');
         tarefasAdicionais.push(tarefa);
         localStorage.setItem(getUserKey('tarefasAdicionais'), JSON.stringify(tarefasAdicionais));
         atualizarLista('tarefasAdicionais');
-        document.getElementById('nova-tarefa-adicional').value = '';
+        if (val === undefined) document.getElementById('nova-tarefa-adicional').value = '';
     }
 }
-function adicionarLink() {
-    const link = document.getElementById('novo-link')?.value.trim();
+
+function adicionarLink(val) {
+    const link = (val !== undefined ? val : document.getElementById('novo-link')?.value).trim();
     if (link !== '') {
         const links = JSON.parse(localStorage.getItem(getUserKey('links')) || '[]');
         links.push(link);
         localStorage.setItem(getUserKey('links'), JSON.stringify(links));
         atualizarLista('links');
-        document.getElementById('novo-link').value = '';
+        if (val === undefined) document.getElementById('novo-link').value = '';
     }
 }
 
-// Sistema de Eventos do Calendário
+function openAddModal(tipo) {
+    let modal = document.getElementById('add-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'add-modal';
+        modal.className = 'modal';
+        document.body.appendChild(modal);
+    }
+    let placeholder = '';
+    switch (tipo) {
+        case 'tarefasDiarias': placeholder = 'Nova tarefa diária'; break;
+        case 'notas': placeholder = 'Nova nota'; break;
+        case 'tarefasAdicionais': placeholder = 'Nova tarefa adicional'; break;
+        case 'links': placeholder = 'Novo link'; break;
+        default: placeholder = '';
+    }
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h3>Adicionar ${tipo === 'notas' ? 'Nota' : tipo === 'links' ? 'Link' : 'Tarefa'}</h3>
+            <input type="text" id="add-input" placeholder="${placeholder}">
+            <div class="drawer-buttons">
+                <button onclick="confirmAdd('${tipo}')">Adicionar</button>
+                <button onclick="closeAddModal()">Cancelar</button>
+            </div>
+        </div>
+    `;
+    modal.style.display = 'flex';
+}
+
+function closeAddModal() {
+    const modal = document.getElementById('add-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+function confirmAdd(tipo) {
+    const valor = document.getElementById('add-input').value.trim();
+    if (!valor) return;
+    switch (tipo) {
+        case 'tarefasDiarias': adicionarTarefaDiaria(valor); break;
+        case 'notas': adicionarNota(valor); break;
+        case 'tarefasAdicionais': adicionarTarefaAdicional(valor); break;
+        case 'links': adicionarLink(valor); break;
+    }
+    closeAddModal();
+}
+
 function getEventosKey() {
     return getUserKey('eventosCalendario');
 }
@@ -429,9 +470,7 @@ function getEventosKey() {
 function carregarEventosDoDia(data, container) {
     const eventos = JSON.parse(localStorage.getItem(getEventosKey())) || {};
     const eventosDoDia = eventos[data] || [];
-    
     container.innerHTML = '';
-    
     if (eventosDoDia.length > 0) {
         const eventIndicator = document.createElement('div');
         eventIndicator.className = 'event-indicator';
@@ -444,7 +483,6 @@ function carregarEventosDoDia(data, container) {
 function abrirModalEventos(dataCompleta, dia, mes, ano) {
     const eventos = JSON.parse(localStorage.getItem(getEventosKey())) || {};
     const eventosDoDia = eventos[dataCompleta] || [];
-    
     let modal = document.getElementById('eventos-modal');
     if (!modal) {
         modal = document.createElement('div');
@@ -452,7 +490,6 @@ function abrirModalEventos(dataCompleta, dia, mes, ano) {
         modal.className = 'modal';
         document.body.appendChild(modal);
     }
-    
     modal.innerHTML = `
         <div class="modal-content">
             <h3>Eventos - ${dia}/${mes + 1}/${ano}</h3>
@@ -460,34 +497,30 @@ function abrirModalEventos(dataCompleta, dia, mes, ano) {
                 ${eventosDoDia.map((evento, index) => `
                     <div class="evento-item">
                         <span>${evento}</span>
-                        <button onclick="removerEvento('${dataCompleta}', ${index})">🗑️</button>
+                        <button onclick="removerEvento('${dataCompleta}', ${index})">X</button>
                     </div>
                 `).join('')}
                 ${eventosDoDia.length === 0 ? '<p>Nenhum evento</p>' : ''}
             </div>
             <div class="novo-evento">
                 <input type="text" id="novo-evento-texto" placeholder="Novo evento...">
-                <button onclick="adicionarEvento('${dataCompleta}')">➕ Adicionar</button>
+                <button onclick="adicionarEvento('${dataCompleta}')">Adicionar</button>
             </div>
             <button onclick="fecharModal()">Fechar</button>
         </div>
     `;
-    
     modal.style.display = 'block';
 }
 
 function adicionarEvento(data) {
     const texto = document.getElementById('novo-evento-texto').value.trim();
     if (!texto) return;
-    
     const eventos = JSON.parse(localStorage.getItem(getEventosKey())) || {};
     if (!eventos[data]) {
         eventos[data] = [];
     }
-    
     eventos[data].push(texto);
     localStorage.setItem(getEventosKey(), JSON.stringify(eventos));
-    
     generateCalendar();
     abrirModalEventos(
         data, 
@@ -522,7 +555,6 @@ function fecharModal() {
     }
 }
 
-// Funções do calendário
 function toggleDrawer() {
     const drawerContent = document.getElementById('drawer-content');
     const drawerArrow = document.getElementById('drawer-arrow');
@@ -541,12 +573,9 @@ function generateCalendar() {
     const calendar = document.getElementById('calendar');
     const monthYear = document.getElementById('calendar-month-year');
     if (!calendar || !monthYear) return;
-    
     calendar.innerHTML = '';
-    
     const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
     monthYear.textContent = `${monthNames[currentMonth]} ${currentYear}`;
-    
     const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     daysOfWeek.forEach(day => {
         const header = document.createElement('div');
@@ -554,41 +583,31 @@ function generateCalendar() {
         header.textContent = day;
         calendar.appendChild(header);
     });
-    
     const firstDay = new Date(currentYear, currentMonth, 1).getDay();
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-    
     for (let i = 0; i < firstDay; i++) {
         const emptyDay = document.createElement('div');
         emptyDay.className = 'calendar-day empty';
         calendar.appendChild(emptyDay);
     }
-    
     for (let day = 1; day <= daysInMonth; day++) {
         const dayElement = document.createElement('div');
         dayElement.className = 'calendar-day';
-        
         const fullDate = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
         dayElement.setAttribute('data-date', fullDate);
-        
         const dayNumber = document.createElement('div');
         dayNumber.className = 'day-number';
         dayNumber.textContent = day;
         dayElement.appendChild(dayNumber);
-        
         const eventsContainer = document.createElement('div');
         eventsContainer.className = 'day-events';
         dayElement.appendChild(eventsContainer);
-        
         carregarEventosDoDia(fullDate, eventsContainer);
-        
         const today = new Date();
         if (day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
             dayElement.classList.add('current');
         }
-        
         dayElement.onclick = () => abrirModalEventos(fullDate, day, currentMonth, currentYear);
-        
         calendar.appendChild(dayElement);
     }
 }
@@ -630,7 +649,6 @@ function atualizarPontos() {
     }
 }
 
-// Quadro Branco
 const canvas = document.getElementById('whiteboard');
 const ctx = canvas ? canvas.getContext('2d') : null;
 let desenhando = false;
@@ -677,14 +695,11 @@ function resizeCanvas() {
     if (!canvas || !ctx) return;
     const largura = Math.min(parseInt(document.getElementById('canvas-width')?.value) || 1200, 2000);
     const altura = Math.min(parseInt(document.getElementById('canvas-height')?.value) || 800, 1500);
-
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
     canvas.style.width = largura + 'px';
     canvas.style.height = altura + 'px';
     canvas.width = largura;
     canvas.height = altura;
-
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.putImageData(imageData, 0, 0);
@@ -694,14 +709,12 @@ if (canvas) {
     document.getElementById('tamanho-traco')?.addEventListener('input', (e) => {
         tamanhoTraco = parseInt(e.target.value);
     });
-
     canvas.addEventListener('mousedown', (e) => {
         if (e.button !== 0) return;
         desenhando = true;
         ctx.beginPath();
         ctx.moveTo(e.offsetX, e.offsetY);
     });
-
     canvas.addEventListener('mousemove', (e) => {
         if (desenhando) {
             ctx.lineTo(e.offsetX, e.offsetY);
@@ -711,52 +724,41 @@ if (canvas) {
             ctx.stroke();
         }
     });
-
     canvas.addEventListener('mouseup', () => {
         desenhando = false;
     });
-
     canvas.addEventListener('mouseout', () => {
         desenhando = false;
     });
-
     inicializarCanvas();
 }
 
-// funções para pagina3.html (Diário)
 function carregarAnotacoes() {
     const lista = document.getElementById('lista-anotacoes');
     if (!lista) return;
     lista.innerHTML = '';
-
     const anotacoes = JSON.parse(localStorage.getItem(getUserKey('anotacoes')) || '[]');
-
     anotacoes.forEach((anotacao, index) => {
         const li = document.createElement('li');
         li.style.marginBottom = '15px';
         li.style.padding = '10px';
         li.style.border = '1px solid #0066ff';
         li.style.borderRadius = '5px';
-
         const titulo = document.createElement('h4');
         titulo.textContent = anotacao.titulo || 'Sem título';
         titulo.style.margin = '0 0 5px 0';
         titulo.style.color = '#0066ff';
-
         const texto = document.createElement('p');
         texto.textContent = anotacao.texto || anotacao;
         texto.style.margin = '0 0 5px 0';
         texto.style.color = '#ffffff';
-
         const data = document.createElement('small');
         data.textContent = anotacao.data ? `Criado em: ${anotacao.data}` : '';
         data.style.color = '#888';
-
         const botaoExcluir = document.createElement('button');
         botaoExcluir.textContent = 'Excluir';
         botaoExcluir.style.marginLeft = '10px';
         botaoExcluir.onclick = () => excluirAnotacao(index);
-
         li.appendChild(titulo);
         li.appendChild(texto);
         li.appendChild(data);
@@ -768,7 +770,6 @@ function carregarAnotacoes() {
 function salvarAnotacao() {
     const titulo = document.getElementById('diario-titulo')?.value.trim();
     const texto = document.getElementById('diario-texto')?.value.trim();
-
     if (texto) {
         const anotacoes = JSON.parse(localStorage.getItem(getUserKey('anotacoes')) || '[]');
         anotacoes.push({
@@ -777,7 +778,6 @@ function salvarAnotacao() {
             data: new Date().toLocaleDateString('pt-BR')
         });
         localStorage.setItem(getUserKey('anotacoes'), JSON.stringify(anotacoes));
-
         document.getElementById('diario-titulo').value = '';
         document.getElementById('diario-texto').value = '';
         carregarAnotacoes();
@@ -791,7 +791,6 @@ function excluirAnotacao(index) {
     carregarAnotacoes();
 }
 
-// funções para pagina4.html (Contato)
 function submitContactForm() {
     const name = document.getElementById('contact-name')?.value.trim();
     const email = document.getElementById('contact-email')?.value.trim();
@@ -817,21 +816,18 @@ function submitContactForm() {
     document.getElementById('contact-message').value = '';
 }
 
-// Inicializa o quadro branco se existir
 function initWhiteboard() {
     if (canvas && ctx) {
         inicializarCanvas();
     }
 }
 
-// SISTEMA DE BACKUP/EXPORTAÇÃO
 function exportarDados() {
     const currentUser = getCurrentUser();
     if (!currentUser) {
         alert('Faça login para exportar seus dados.');
         return;
     }
-
     const dadosParaExportar = {
         usuario: currentUser,
         dataExportacao: new Date().toISOString(),
@@ -844,11 +840,9 @@ function exportarDados() {
         pontos: localStorage.getItem(`pontos_${currentUser}`) || '0',
         eventosCalendario: JSON.parse(localStorage.getItem(`eventosCalendario_${currentUser}`) || '{}')
     };
-
     const dadosJSON = JSON.stringify(dadosParaExportar, null, 2);
     const blob = new Blob([dadosJSON], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-
     const a = document.createElement('a');
     a.href = url;
     a.download = `codex-backup-${currentUser}-${new Date().toISOString().split('T')[0]}.json`;
@@ -856,18 +850,15 @@ function exportarDados() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-
     alert('Dados exportados com sucesso!');
 }
 
 function importarDados() {
     const fileInput = document.getElementById('import-file');
     fileInput.click();
-
     fileInput.onchange = function(e) {
         const file = e.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = function(event) {
             try {
@@ -887,13 +878,11 @@ function confirmarImportacao(dados) {
         alert('Faça login para importar dados.');
         return;
     }
-
     if (confirm(`Importar dados de ${dados.usuario}?\nIsso substituirá seus dados atuais.`)) {
         if (!dados.usuario || !dados.dataExportacao) {
             alert('Arquivo inválido. Use um backup exportado do Codex.');
             return;
         }
-
         localStorage.setItem(`tarefasPermanentes_${currentUser}`, JSON.stringify(dados.tarefasPermanentes || []));
         localStorage.setItem(`tarefasDiarias_${currentUser}`, JSON.stringify(dados.tarefasDiarias || []));
         localStorage.setItem(`notas_${currentUser}`, JSON.stringify(dados.notas || []));
@@ -902,40 +891,45 @@ function confirmarImportacao(dados) {
         localStorage.setItem(`anotacoes_${currentUser}`, JSON.stringify(dados.anotacoes || []));
         localStorage.setItem(`pontos_${currentUser}`, dados.pontos || '0');
         localStorage.setItem(`eventosCalendario_${currentUser}`, JSON.stringify(dados.eventosCalendario || {}));
-
         loadAll();
         alert('Dados importados com sucesso!');
     }
-
     document.getElementById('import-file').value = '';
 }
 
-// Sistema de Configurações
 function getButtonTheme() {
-    return localStorage.getItem('buttonTheme') || 'blue';
+    return 'custom';
 }
 
 function setButtonTheme(theme) {
-    localStorage.setItem('buttonTheme', theme);
-    aplicarTemaGlobal();
+}
+
+function getCustomColor() {
+    return localStorage.getItem('customColor') || '#2563eb';
+}
+
+function setCustomColor(color) {
+    localStorage.setItem('customColor', color);
 }
 
 function aplicarTemaGlobal() {
-    const tema = getButtonTheme();
+    const cor = getCustomColor();
     const botoes = document.querySelectorAll('button');
-    
     botoes.forEach(botao => {
-        botao.classList.remove('theme-blue', 'theme-red', 'theme-yellow', 'theme-green', 'theme-black', 'theme-white');
-        
-        // Não aplicar tema a botões especiais
-        if (!botao.classList.contains('delete-user-btn') && 
-            !botao.classList.contains('confirm-delete') && 
+        botao.classList.remove('theme-blue','theme-red','theme-yellow',
+                               'theme-green','theme-black','theme-white');
+        if (!botao.classList.contains('delete-user-btn') &&
+            !botao.classList.contains('confirm-delete') &&
             !botao.classList.contains('cancel-delete') &&
             !botao.classList.contains('close-settings')) {
-            botao.classList.add(`theme-${tema}`);
+            botao.style.backgroundColor = cor;
+            botao.style.borderColor = cor;
+            botao.style.color = '#ffffff';
         }
     });
 }
+
+aplicarTemaGlobal();
 
 function abrirConfiguracoes() {
     let modal = document.getElementById('settings-modal');
@@ -945,68 +939,26 @@ function abrirConfiguracoes() {
         modal.className = 'settings-modal';
         document.body.appendChild(modal);
     }
-    
-    const temaAtual = getButtonTheme();
-    
     modal.innerHTML = `
         <div class="settings-content">
-            <h2>⚙️ Configurações</h2>
-            
+            <h2>Configurações</h2>
             <div class="settings-group">
                 <h3>Cor dos Botões</h3>
-                <div class="color-options">
-                    <div class="color-option">
-                        <input type="radio" id="theme-blue" name="theme" value="blue" ${temaAtual === 'blue' ? 'checked' : ''}>
-                        <label for="theme-blue">Azul</label>
-                        <div class="color-preview" style="background-color: #2563eb;"></div>
-                    </div>
-                    
-                    <div class="color-option">
-                        <input type="radio" id="theme-red" name="theme" value="red" ${temaAtual === 'red' ? 'checked' : ''}>
-                        <label for="theme-red">Vermelho</label>
-                        <div class="color-preview" style="background-color: #dc2626;"></div>
-                    </div>
-                    
-                    <div class="color-option">
-                        <input type="radio" id="theme-yellow" name="theme" value="yellow" ${temaAtual === 'yellow' ? 'checked' : ''}>
-                        <label for="theme-yellow">Amarelo</label>
-                        <div class="color-preview" style="background-color: #d97706;"></div>
-                    </div>
-                    
-                    <div class="color-option">
-                        <input type="radio" id="theme-green" name="theme" value="green" ${temaAtual === 'green' ? 'checked' : ''}>
-                        <label for="theme-green">Verde</label>
-                        <div class="color-preview" style="background-color: #16a34a;"></div>
-                    </div>
-                    
-                    <div class="color-option">
-                        <input type="radio" id="theme-black" name="theme" value="black" ${temaAtual === 'black' ? 'checked' : ''}>
-                        <label for="theme-black">Preto</label>
-                        <div class="color-preview" style="background-color: #1a1a1a;"></div>
-                    </div>
-                    
-                    <div class="color-option">
-                        <input type="radio" id="theme-white" name="theme" value="white" ${temaAtual === 'white' ? 'checked' : ''}>
-                        <label for="theme-white">Branco</label>
-                        <div class="color-preview" style="background-color: #f0f0f0; border: 2px solid #000000;"></div>
-                    </div>
-                </div>
+                <input type="color" id="custom-color-picker" value="${getCustomColor()}">
             </div>
-            
             <div class="settings-buttons">
                 <button class="close-settings" onclick="fecharConfiguracoes()">Fechar</button>
             </div>
         </div>
     `;
-    
     modal.classList.add('active');
-    
-    // Adicionar event listeners aos radios
-    document.querySelectorAll('input[name="theme"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            setButtonTheme(e.target.value);
+    const picker = document.getElementById('custom-color-picker');
+    if (picker) {
+        picker.addEventListener('input', (e) => {
+            setCustomColor(e.target.value);
+            aplicarTemaGlobal();
         });
-    });
+    }
 }
 
 function fecharConfiguracoes() {
@@ -1016,7 +968,6 @@ function fecharConfiguracoes() {
     }
 }
 
-// Inicialização
 window.onload = () => {
     loadUserList();
     const users = getUsers();
@@ -1025,27 +976,18 @@ window.onload = () => {
     }
 
     checkPageAuth();
-
     initWhiteboard();
     carregarAnotacoes();
-
     if (document.getElementById('calendar')) {
         generateCalendar();
     }
-    
-    // Aplicar tema global ao carregar
-    aplicarTemaGlobal();
-    
-    // Observar mudanças de DOM e aplicar tema a novos botões
     const observer = new MutationObserver(() => {
         aplicarTemaGlobal();
     });
-    
     observer.observe(document.body, { 
         childList: true, 
         subtree: true 
     });
-
     window.addEventListener('resize', () => {
         if (document.getElementById('drawer-content')?.classList.contains('active')) {
             const calendar = document.getElementById('calendar');

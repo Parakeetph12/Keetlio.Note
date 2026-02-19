@@ -269,7 +269,7 @@ input[type="range"] {
 }
 
 #login-container {
-    position: fixed;
+    position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -280,7 +280,6 @@ input[type="range"] {
     border: 1px solid #2a2a2a;
     width: 400px;
     max-width: 90%;
-    z-index: 9999;
 }
 
 #login-form {
@@ -784,31 +783,6 @@ button.theme-white:hover {
 }
 
 @media (max-width: 480px) {
-    #login-container {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 95%;
-        max-width: 95%;
-        padding: 20px;
-        max-height: 80vh;
-        overflow-y: auto;
-    }
-
-    #login-form {
-        display: flex;
-        flex-direction: column;
-    }
-
-    #login-form h3 {
-        font-size: 16px;
-    }
-
-    #user-list {
-        max-height: 120px;
-    }
-
     .calendar {
         grid-template-columns: repeat(7, 1fr);
         gap: 1px;

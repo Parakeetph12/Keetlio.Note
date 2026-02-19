@@ -21,7 +21,7 @@
         <p>Meu local de organização</p>
         <p id="pontos">Pontos: 0</p>
         <div style="display: flex; gap: 10px; justify-content: center;">
-            <button onclick="abrirConfiguracoes()" title="Configurações">⚙️ Configurações</button>
+            <button onclick="abrirConfiguracoes()" title="Configurações">Configurações</button>
             <button onclick="logout()">Sair</button>
         </div>
     </header>
@@ -30,34 +30,12 @@
 <button onclick="importarDados()" class="import-btn">Importar Dados</button>
 <input type="file" id="import-file" style="display: none;">
 
-    <div id="login-container">
-        <h2>Login</h2>
-        <div id="login-form">
-            <h3>Usuários cadastrados:</h3>
-            <ul id="user-list"></ul>
-            <label for="username">Usuário:</label>
-            <input type="text" id="username" placeholder="Digite seu usuário">
-            <label for="password">Senha:</label>
-            <input type="password" id="password" placeholder="Digite sua senha">
-            <button onclick="login()">Entrar</button>
-            <p id="login-error">Usuário ou senha incorretos.</p>
-            <div id="new-user-section">
-                <h3>Cadastrar novo usuário:</h3>
-                <input type="text" id="new-username" placeholder="Novo usuário">
-                <input type="password" id="new-password" placeholder="Nova senha">
-                <button onclick="registerUser()">Cadastrar</button>
-                <p id="register-error"></p>
-                <p id="register-success">Usuário cadastrado com sucesso!</p>
-            </div>
-        </div>
-    </div>
     <div class="main-sections">
         <div class="fixed-section">
             <h3>Tarefas Diárias</h3>
             <ul id="tarefas-diarias"></ul>
-            <input type="text" id="nova-tarefa-diaria" placeholder="Nova tarefa diária">
             <div class="button-group">
-                <button onclick="adicionarTarefaDiaria()">Adicionar Tarefa Diária</button>
+                <button onclick="openAddModal('tarefasDiarias')">Adicionar Tarefa Diária</button>
                 <button onclick="mostrarGerenciarTarefas()">Gerenciar Tarefas Diárias</button>
             </div>
             <div id="gerenciar-tarefas" style="display: none;">
@@ -68,20 +46,17 @@
         <div class="fixed-section">
             <h3>Minhas Notas</h3>
             <ul id="lista-notas"></ul>
-            <input type="text" id="nova-nota" placeholder="Nova nota">
-            <button onclick="adicionarNota()">Adicionar Nota</button>
+            <button onclick="openAddModal('notas')">Adicionar Nota</button>
         </div>
         <div class="fixed-section">
             <h3>Tarefas Adicionais</h3>
             <ul id="lista-tarefas-adicionais"></ul>
-            <input type="text" id="nova-tarefa-adicional" placeholder="Nova tarefa">
-            <button onclick="adicionarTarefaAdicional()">Adicionar Tarefa</button>
+            <button onclick="openAddModal('tarefasAdicionais')">Adicionar Tarefa</button>
         </div>
         <div class="fixed-section">
             <h3>Links Importantes</h3>
             <ul id="lista-links"></ul>
-            <input type="text" id="novo-link" placeholder="Novo link">
-            <button onclick="adicionarLink()">Adicionar Link</button>
+            <button onclick="openAddModal('links')">Adicionar Link</button>
         </div>
     </div>
     <div class="drawer-container">

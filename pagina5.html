@@ -52,6 +52,14 @@
         <h1>Atualizações</h1>
     </header>
 
+    <div style="display: flex; gap: 10px; justify-content: center;">
+        <button onclick="abrirConfiguracoes()" title="Configurações">Configurações</button>
+        <button onclick="logout()">Sair</button>
+        <button onclick="exportarDados()">Exportar Dados</button>
+        <button onclick="importarDados()">Importar Dados</button>
+        <input type="file" id="import-file" style="display: none;">
+    </div>
+
     <div class="updates-container">
         <div class="update-section">
             <h3>Janeiro 2026:</h3>
@@ -59,6 +67,13 @@
                 <li>Nova função de personalização</li>
                 <li>Novo design</li>
                 <li>Resolução de bugs</li>
+            </ul>
+
+            <h3>Fevereiro 2026:</h3>
+            <ul>
+                <li>Renovação da forma de personalização</li>
+                <li>melhorias na interface de colocar tarefas, notas e links</li>
+                <li>Adição de página de login</li>
             </ul>
         </div>
     </div>

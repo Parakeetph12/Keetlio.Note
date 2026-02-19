@@ -20,6 +20,15 @@
         <h1>Contato</h1>
         <p>Entre em contato caso queira dar uma sugestão</p>
     </header>
+
+    <div style="display: flex; gap: 10px; justify-content: center;">
+        <button onclick="abrirConfiguracoes()" title="Configurações">Configurações</button>
+        <button onclick="logout()">Sair</button>
+        <button onclick="exportarDados()">Exportar Dados</button>
+        <button onclick="importarDados()">Importar Dados</button>
+        <input type="file" id="import-file" style="display: none;">
+    </div>
+
     <div class="fixed-section">
         <h3>Formulário de Contato</h3>
         <div id="contact-form">
