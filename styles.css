@@ -471,88 +471,53 @@ input[type="range"] {
     text-shadow: none;
 }
 
-/* Modal de eventos */
+/* Modal de eventos centralizado */
 .modal {
-    display: none;
+    display: none; 
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    z-index: 1000;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    
     justify-content: center;
     align-items: center;
+    backdrop-filter: blur(4px); 
 }
 
 .modal-content {
     background-color: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    border: 1px solid #333;
     border-radius: 12px;
-    padding: 20px;
+    padding: 25px;
     max-width: 400px;
-    width: 90%;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-}
-
-.modal-content h3 {
-    margin-top: 0;
-    color: #ffffff;
-}
-
-.modal-content input[type="text"] {
-    width: calc(100% - 22px);
-}
-
-.evento-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #141414;
-    padding: 8px;
-    border-radius: 6px;
-    margin-bottom: 8px;
-    color: #ffffff;
-    border: 1px solid #2a2a2a;
-}
-
-.evento-item button {
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    padding: 0;
+    width: 85%;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    position: relative;
 }
 
 .novo-evento {
     display: flex;
-    gap: 5px;
-    margin-top: 10px;
+    flex-direction: column; 
+    gap: 10px;
+    margin-top: 15px;
 }
 
-.novo-evento input {
-    flex: 1;
+.inputs-agrupados {
+    display: flex;
+    gap: 8px;
 }
 
-.novo-evento button {
-    width: auto;
+body.light-mode .modal-content {
+    background-color: #ffffff !important;
+    border-color: #ddd !important;
 }
 
-.event-indicator {
-    font-size: 10px;
-    background-color: #2a2a2a;
-    color: #ffffff;
-    padding: 2px 4px;
-    border-radius: 3px;
-    text-align: center;
-}
-
-.day-number {
-    font-weight: 600;
-}
-
-.day-events {
-    margin-top: 2px;
+body.light-mode .modal-content h3, 
+body.light-mode .evento-item span {
+    color: #000000 !important;
 }
 
 /* Tela de Configurações */
@@ -647,7 +612,6 @@ input[type="range"] {
     border: 1px solid #3a3a3a;
 }
 
-/* Cores dos botões por tema */
 button.theme-blue {
     background-color: #2563eb !important;
     border-color: #1d4ed8 !important;
@@ -849,4 +813,48 @@ button.theme-white:hover {
     h1 {
         font-size: 20px;
     }
+}
+
+body.light-mode {
+    background-color: #f0f2f5 !important;
+    color: #1a1a1a !important;
+}
+
+body.light-mode :where(header, nav, section, div, ul, li, .modal-content, .drawer-container, .drawer-content, .calendar, #login-container, .update-section) {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #1a1a1a !important;
+    border-color: #dcdcdc !important;
+}
+
+body.light-mode li, 
+body.light-mode .user-item,
+body.light-mode .calendar-day {
+    background-color: #ffffff !important;
+    color: #1a1a1a !important;
+    border: 1px solid #dee2e6 !important;
+}
+
+body.light-mode :where(h1, h2, h3, h4, p, span, label, strong, a) {
+    color: #1a1a1a !important;
+}
+
+body.light-mode li:hover,
+body.light-mode .calendar-day:hover,
+body.light-mode .drawer-header:hover,
+body.light-mode .user-item:hover,
+body.light-mode nav a:hover {
+    background-color: #f8f9fa !important;
+    border-color: #c0c0c0 !important;
+    cursor: pointer;
+}
+
+body.light-mode :where(input, textarea, select) {
+    background-color: #ffffff !important;
+    color: #1a1a1a !important;
+    border: 1px solid #ced4da !important;
+}
+
+body.light-mode nav a {
+    background-color: #e9ecef !important;
 }

@@ -29,17 +29,20 @@ function loadUserList() {
         userList.appendChild(li);
         return;
     }
+
     users.forEach((user, index) => {
         const li = document.createElement('li');
         const userDiv = document.createElement('div');
         userDiv.className = 'user-item';
-        const usernamSpan = document.createElement('span');
-        usernamSpan.textContent = user.username;
-        usernamSpan.style.cursor = 'pointer';
-        usernamSpan.onclick = () => {
+
+        const usernameSpan = document.createElement('span');
+        usernameSpan.textContent = user.username;
+        usernameSpan.style.cursor = 'pointer';
+        usernameSpan.onclick = () => {
             document.getElementById('username').value = user.username;
             document.getElementById('password').focus();
         };
+
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Deletar';
         deleteBtn.className = 'delete-user-btn';
@@ -47,7 +50,7 @@ function loadUserList() {
             e.stopPropagation();
             abrirConfirmacaoDeletar(index, user.username);
         };
-        userDiv.appendChild(usernamSpan);
+        userDiv.appendChild(usernameSpan);
         userDiv.appendChild(deleteBtn);
         li.appendChild(userDiv);
         userList.appendChild(li);
@@ -251,61 +254,91 @@ function marcarTarefa(index) {
     carregarTarefasDiarias();
     atualizarPontos();
 }
-function adicionarTarefaDiaria() {
-    const novaTarefa = document.getElementById('nova-tarefa-diaria')?.value.trim();
-    if (novaTarefa !== '') {
+
+function adicionarTarefaDiaria(valorManual) {
+    const novaTarefa = (valorManual !== undefined ? valorManual : document.getElementById('nova-tarefa-diaria')?.value)?.trim();
+
+    if (novaTarefa && novaTarefa !== '') {
         const tarefasPermanentes = JSON.parse(localStorage.getItem(getUserKey('tarefasPermanentes'))) || [];
         if (!tarefasPermanentes.includes(novaTarefa)) {
             tarefasPermanentes.push(novaTarefa);
             localStorage.setItem(getUserKey('tarefasPermanentes'), JSON.stringify(tarefasPermanentes));
         }
+
         const tarefas = JSON.parse(localStorage.getItem(getUserKey('tarefasDiarias'))) || [];
         if (!tarefas.some(t => t.tarefa === novaTarefa)) {
             tarefas.push({ tarefa: novaTarefa, concluida: false });
             localStorage.setItem(getUserKey('tarefasDiarias'), JSON.stringify(tarefas));
         }
+
         carregarTarefasDiarias();
-        document.getElementById('nova-tarefa-diaria').value = '';
-        mostrarGerenciarTarefas();
+
+        const inputAntigo = document.getElementById('nova-tarefa-diaria');
+        if (inputAntigo) inputAntigo.value = '';
+
+        const gerenciarSection = document.getElementById('gerenciar-tarefas');
+        if (gerenciarSection && gerenciarSection.style.display !== 'none') {
+            mostrarGerenciarTarefas();
+        }
     }
 }
 
 function mostrarGerenciarTarefas() {
-    const gerenciarSection = document.getElementById('gerenciar-tarefas');
-    const listaGerenciar = document.getElementById('lista-tarefas-gerenciar');
-    listaGerenciar.innerHTML = '';
-    const tarefasPermanentes = JSON.parse(localStorage.getItem(getUserKey('tarefasPermanentes'))) || [];
-    if (tarefasPermanentes.length === 0) {
-        const li = document.createElement('li');
-        li.textContent = 'Nenhuma tarefa permanente cadastrada';
-        li.style.color = '#888';
-        listaGerenciar.appendChild(li);
-    } else {
-        tarefasPermanentes.forEach((tarefa, index) => {
-            const li = document.createElement('li');
-            const span = document.createElement('span');
-            span.textContent = tarefa;
-            const botaoExcluir = document.createElement('button');
-            botaoExcluir.textContent = 'Remover';
-            botaoExcluir.onclick = () => removerTarefaPermanente(index);
-            li.appendChild(span);
-            li.appendChild(botaoExcluir);
-            listaGerenciar.appendChild(li);
-        });
+    let modal = document.getElementById('gerenciar-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'gerenciar-modal';
+        modal.className = 'modal';
+        document.body.appendChild(modal);
     }
-    gerenciarSection.style.display = gerenciarSection.style.display === 'none' ? 'block' : 'none';
+
+    const tarefasPermanentes = JSON.parse(localStorage.getItem(getUserKey('tarefasPermanentes'))) || [];
+
+    let listaHTML = tarefasPermanentes.length === 0
+        ? '<p style="color: #888; margin: 20px 0;">Nenhuma tarefa permanente cadastrada.</p>'
+        : `<ul class="lista-gerenciar" style="list-style: none; padding: 0; margin: 20px 0; max-height: 300px; overflow-y: auto;">
+            ${tarefasPermanentes.map((tarefa, index) => `
+                <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #333;">
+                    <span style="color: white;">${tarefa}</span>
+                    <button onclick="removerTarefaPermanente(${index})" style="background-color: #ff4444; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Remover</button>
+                </li>
+            `).join('')}
+          </ul>`;
+
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px; width: 90%;">
+            <h3 style="color: white; margin-top: 0;">Gerenciar Tarefas Diárias</h3>
+            <p style="color: #bbb; font-size: 0.9em;">Remova tarefas que não devem mais aparecer diariamente.</p>
+            
+            ${listaHTML}
+            
+            <div class="drawer-buttons">
+                <button onclick="fecharModalGerenciar()">Fechar</button>
+            </div>
+        </div>
+    `;
+
+    modal.style.display = 'flex';
+}
+
+function fecharModalGerenciar() {
+    const modal = document.getElementById('gerenciar-modal');
+    if (modal) modal.style.display = 'none';
 }
 
 function removerTarefaPermanente(index) {
     const tarefasPermanentes = JSON.parse(localStorage.getItem(getUserKey('tarefasPermanentes'))) || [];
     const tarefaRemovida = tarefasPermanentes.splice(index, 1)[0];
     localStorage.setItem(getUserKey('tarefasPermanentes'), JSON.stringify(tarefasPermanentes));
+
     const tarefasDiarias = JSON.parse(localStorage.getItem(getUserKey('tarefasDiarias'))) || [];
     const indexDiaria = tarefasDiarias.findIndex(t => t.tarefa === tarefaRemovida);
+
     if (indexDiaria !== -1) {
         tarefasDiarias.splice(indexDiaria, 1);
         localStorage.setItem(getUserKey('tarefasDiarias'), JSON.stringify(tarefasDiarias));
     }
+
     mostrarGerenciarTarefas();
     carregarTarefasDiarias();
 }
@@ -484,50 +517,63 @@ function abrirModalEventos(dataCompleta, dia, mes, ano) {
     const eventos = JSON.parse(localStorage.getItem(getEventosKey())) || {};
     const eventosDoDia = eventos[dataCompleta] || [];
     let modal = document.getElementById('eventos-modal');
+    
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'eventos-modal';
         modal.className = 'modal';
         document.body.appendChild(modal);
     }
+
     modal.innerHTML = `
         <div class="modal-content">
             <h3>Eventos - ${dia}/${mes + 1}/${ano}</h3>
-            <div id="lista-eventos">
-                ${eventosDoDia.map((evento, index) => `
-                    <div class="evento-item">
-                        <span>${evento}</span>
-                        <button onclick="removerEvento('${dataCompleta}', ${index})">X</button>
+            <div id="lista-eventos" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+                ${eventosDoDia.map((ev, index) => `
+                    <div class="evento-item" style="display: flex; justify-content: space-between; align-items: center; padding: 5px; border-bottom: 1px solid #333;">
+                        <span><strong>${ev.hora}</strong> - ${ev.texto}</span>
+                        <button onclick="removerEvento('${dataCompleta}', ${index})" style="background: #ff4444; border: none; border-radius: 4px; color: white; cursor: pointer;">X</button>
                     </div>
                 `).join('')}
-                ${eventosDoDia.length === 0 ? '<p>Nenhum evento</p>' : ''}
+                ${eventosDoDia.length === 0 ? '<p style="color: #888;">Nenhum evento agendado.</p>' : ''}
             </div>
-            <div class="novo-evento">
-                <input type="text" id="novo-evento-texto" placeholder="Novo evento...">
-                <button onclick="adicionarEvento('${dataCompleta}')">Adicionar</button>
+            <div class="novo-evento" style="display: flex; flex-direction: column; gap: 10px;">
+                <input type="text" id="novo-evento-texto" placeholder="O que vai fazer?">
+                <div style="display: flex; gap: 5px;">
+                    <input type="time" id="novo-evento-hora" value="12:00" style="flex: 1;">
+                    <button onclick="adicionarEvento('${dataCompleta}')" style="flex: 1;">Adicionar</button>
+                </div>
             </div>
-            <button onclick="fecharModal()">Fechar</button>
+            <br>
+            <button onclick="fecharModal()" style="width: 100%; background: #444;">Fechar</button>
         </div>
     `;
-    modal.style.display = 'block';
+    
+    if ("Notification" in window) Notification.requestPermission();
+    
+    modal.style.display = 'flex'; 
 }
 
 function adicionarEvento(data) {
     const texto = document.getElementById('novo-evento-texto').value.trim();
+    const hora = document.getElementById('novo-evento-hora').value;
+    
     if (!texto) return;
+    
     const eventos = JSON.parse(localStorage.getItem(getEventosKey())) || {};
-    if (!eventos[data]) {
-        eventos[data] = [];
-    }
-    eventos[data].push(texto);
+    if (!eventos[data]) eventos[data] = [];
+
+    eventos[data].push({ 
+        texto: texto, 
+        hora: hora, 
+        notificado: false 
+    });
+
     localStorage.setItem(getEventosKey(), JSON.stringify(eventos));
+    
+    const partes = data.split('-');
+    abrirModalEventos(data, parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
     generateCalendar();
-    abrirModalEventos(
-        data, 
-        parseInt(data.split('-')[2]),
-        parseInt(data.split('-')[1]) - 1,
-        parseInt(data.split('-')[0])
-    );
 }
 
 function removerEvento(data, index) {
@@ -856,11 +902,11 @@ function exportarDados() {
 function importarDados() {
     const fileInput = document.getElementById('import-file');
     fileInput.click();
-    fileInput.onchange = function(e) {
+    fileInput.onchange = function (e) {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = function(event) {
+        reader.onload = function (event) {
             try {
                 const dadosImportados = JSON.parse(event.target.result);
                 confirmarImportacao(dadosImportados);
@@ -916,8 +962,8 @@ function aplicarTemaGlobal() {
     const cor = getCustomColor();
     const botoes = document.querySelectorAll('button');
     botoes.forEach(botao => {
-        botao.classList.remove('theme-blue','theme-red','theme-yellow',
-                               'theme-green','theme-black','theme-white');
+        botao.classList.remove('theme-blue', 'theme-red', 'theme-yellow',
+            'theme-green', 'theme-black', 'theme-white');
         if (!botao.classList.contains('delete-user-btn') &&
             !botao.classList.contains('confirm-delete') &&
             !botao.classList.contains('cancel-delete') &&
@@ -939,9 +985,19 @@ function abrirConfiguracoes() {
         modal.className = 'settings-modal';
         document.body.appendChild(modal);
     }
+
+    const isLightMode = document.body.classList.contains('light-mode');
+
     modal.innerHTML = `
         <div class="settings-content">
             <h2>Configurações</h2>
+            <div class="settings-group">
+                <h3>Aparência</h3>
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="light-mode-toggle" ${isLightMode ? 'checked' : ''}> 
+                    Modo Claro
+                </label>
+            </div>
             <div class="settings-group">
                 <h3>Cor dos Botões</h3>
                 <input type="color" id="custom-color-picker" value="${getCustomColor()}">
@@ -952,6 +1008,11 @@ function abrirConfiguracoes() {
         </div>
     `;
     modal.classList.add('active');
+
+    document.getElementById('light-mode-toggle').addEventListener('change', function (e) {
+        toggleLightMode(e.target.checked);
+    });
+
     const picker = document.getElementById('custom-color-picker');
     if (picker) {
         picker.addEventListener('input', (e) => {
@@ -959,6 +1020,24 @@ function abrirConfiguracoes() {
             aplicarTemaGlobal();
         });
     }
+}
+
+function toggleLightMode(isLight) {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return;
+
+    const key = getUserKey('theme');
+    if (isLight) {
+        document.body.classList.add('light-mode');
+        localStorage.setItem(key, 'light');
+    } else {
+        document.body.classList.remove('light-mode');
+        localStorage.setItem(key, 'dark');
+    }
+
+    if (document.getElementById('calendar')) generateCalendar();
+    if (typeof loadAll === 'function') loadAll();
+    aplicarTemaGlobal();
 }
 
 function fecharConfiguracoes() {
@@ -969,35 +1048,52 @@ function fecharConfiguracoes() {
 }
 
 window.onload = () => {
+    
+    inicializarNotificacoes();
+    
     loadUserList();
-    const users = getUsers();
-    if (users.length === 0) {
-        // Não cria usuário padrão
+    const currentUser = getCurrentUser();
+
+    if (currentUser) {
+        const key = getUserKey('theme');
+        const savedTheme = localStorage.getItem(key);
+
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-mode');
+        } else {
+            document.body.classList.remove('light-mode');
+        }
+    } else {
+        document.body.classList.remove('light-mode');
     }
 
     checkPageAuth();
-    initWhiteboard();
-    carregarAnotacoes();
     if (document.getElementById('calendar')) {
         generateCalendar();
     }
+
     const observer = new MutationObserver(() => {
         aplicarTemaGlobal();
     });
-    observer.observe(document.body, { 
-        childList: true, 
-        subtree: true 
-    });
-    window.addEventListener('resize', () => {
-        if (document.getElementById('drawer-content')?.classList.contains('active')) {
-            const calendar = document.getElementById('calendar');
-            const proporcao = parseInt(document.getElementById('largura-tela')?.value || 800) / parseInt(document.getElementById('altura-tela')?.value || 500);
-            calendar.style.width = '100%';
-            calendar.style.height = (calendar.offsetWidth / proporcao) + 'px';
-            generateCalendar();
-        }
-    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    aplicarTemaGlobal();
 };
+
+observer.observe(document.body, {
+    childList: true,
+    subtree: true
+});
+
+window.addEventListener('resize', () => {
+    if (document.getElementById('drawer-content')?.classList.contains('active')) {
+        const calendar = document.getElementById('calendar');
+        const proporcao = parseInt(document.getElementById('largura-tela')?.value || 800) / parseInt(document.getElementById('altura-tela')?.value || 500);
+        calendar.style.width = '100%';
+        calendar.style.height = (calendar.offsetWidth / proporcao) + 'px';
+        generateCalendar();
+    }
+});
 
 function loadAll() {
     carregarTarefasDiarias();
@@ -1007,3 +1103,51 @@ function loadAll() {
         generateCalendar();
     }
 }
+
+function inicializarNotificacoes() {
+    if ("Notification" in window) {
+        if (Notification.permission === "default") {
+            Notification.requestPermission();
+        }
+    }
+}
+
+setInterval(() => {
+    const agora = new Date();
+    
+    const ano = agora.getFullYear();
+    const mes = String(agora.getMonth() + 1).padStart(2, '0');
+    const dia = String(agora.getDate()).padStart(2, '0');
+    const dataKey = `${ano}-${mes}-${dia}`;
+    
+    const horaAtual = agora.getHours().toString().padStart(2, '0') + ":" + 
+                      agora.getMinutes().toString().padStart(2, '0');
+
+    const eventos = JSON.parse(localStorage.getItem(getEventosKey())) || {};
+    const eventosDoDia = eventos[dataKey];
+
+    if (eventosDoDia) {
+        let mudou = false;
+        
+        eventosDoDia.forEach(ev => {
+            if (ev.hora === horaAtual && !ev.notificado) {
+                
+                if (Notification.permission === "granted") {
+                    new Notification("Lembrete do Codex", {
+                        body: ev.texto,
+                        icon: "https://i.postimg.cc/vZDvN61b/Logopit-1600638333146.png"
+                    });
+                } else {
+                    alert("ALERTA: " + ev.texto);
+                }
+
+                ev.notificado = true;
+                mudou = true;
+            }
+        });
+
+        if (mudou) {
+            localStorage.setItem(getEventosKey(), JSON.stringify(eventos));
+        }
+    }
+}, 30000);
