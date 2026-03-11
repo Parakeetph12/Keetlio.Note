@@ -6,6 +6,7 @@
     <title>Keetlio.Note</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/png" href="https://i.postimg.cc/vZDvN61b/Logopit-1600638333146.png">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="script.js" defer></script>
 </head>
 <body>
@@ -29,6 +30,9 @@
 <button onclick="exportarDados()" class="export-btn">Exportar Dados</button>
 <button onclick="importarDados()" class="import-btn">Importar Dados</button>
 <input type="file" id="import-file" style="display: none;">
+<button onclick="conectarGoogleAgenda()" style="background-color: #4285F4; color: white;">
+    Conectar Google Agenda
+</button>
 
     <div class="main-sections">
         <div class="fixed-section">

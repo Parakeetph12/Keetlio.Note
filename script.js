@@ -1,3 +1,21 @@
+const CLIENT_ID = '1040058770852-5p6tn1su7ipp70mi8q0em7kig8qr11v3.apps.googleusercontent.com';
+let tokenAcesso = null;
+
+function conectarGoogleAgenda() {
+    const client = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: 'https://www.googleapis.com/auth/calendar.events',
+        callback: (response) => {
+            if (response.access_token) {
+                tokenAcesso = response.access_token;
+                localStorage.setItem('google_access_token', tokenAcesso);
+                alert("Keetlio conectado ao Google Agenda!");
+            }
+        },
+    });
+    client.requestAccessToken();
+}
+
 function getUsers() {
     return JSON.parse(localStorage.getItem('codexUsers')) || [];
 }
@@ -569,7 +587,7 @@ function adicionarEvento(data) {
         notificado: false 
     });
 
-    localStorage.setItem(getEventosKey(), JSON.stringify(eventos));
+    salvarNoGoogleAutomatico(texto, data, hora);
     
     const partes = data.split('-');
     abrirModalEventos(data, parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
@@ -1151,3 +1169,32 @@ setInterval(() => {
         }
     }
 }, 30000);
+
+async function salvarNoGoogleAutomatico(texto, data, hora) {
+    const token = tokenAcesso || localStorage.getItem('google_access_token');
+    if (!token) return; 
+
+    const dataInicio = `${data}T${hora}:00`;
+    const dataFim = new Date(new Date(dataInicio).getTime() + 30 * 60000).toISOString().split('.')[0];
+
+    const evento = {
+        'summary': texto,
+        'description': 'Evento do Keetlio.Note',
+        'start': { 'dateTime': dataInicio, 'timeZone': 'America/Sao_Paulo' },
+        'end': { 'dateTime': dataFim, 'timeZone': 'America/Sao_Paulo' }
+    };
+
+    try {
+        await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(evento)
+        });
+        console.log("Sincronizado com Google Agenda!");
+    } catch (err) {
+        console.error("Erro na sincronização:", err);
+    }
+}
