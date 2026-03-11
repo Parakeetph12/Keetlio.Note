@@ -5,6 +5,7 @@ function conectarGoogleAgenda() {
     const client = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: 'https://www.googleapis.com/auth/calendar.events',
+        prompt: 'select_account consent',
         callback: (response) => {
             if (response.access_token) {
                 tokenAcesso = response.access_token;
