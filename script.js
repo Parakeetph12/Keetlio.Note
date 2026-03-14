@@ -11,6 +11,7 @@ function conectarGoogleAgenda() {
                 tokenAcesso = response.access_token;
                 localStorage.setItem('google_access_token', tokenAcesso);
                 alert("Keetlio conectado ao Google Agenda!");
+                carregarEventosDoGoogle();
             }
         },
     });
@@ -520,23 +521,32 @@ function getEventosKey() {
 }
 
 function carregarEventosDoDia(data, container) {
-    const eventos = JSON.parse(localStorage.getItem(getEventosKey())) || {};
-    const eventosDoDia = eventos[data] || [];
-    container.innerHTML = '';
-    if (eventosDoDia.length > 0) {
-        const eventIndicator = document.createElement('div');
-        eventIndicator.className = 'event-indicator';
-        eventIndicator.textContent = `${eventosDoDia.length} evento(s)`;
-        eventIndicator.title = eventosDoDia.join(', ');
-        container.appendChild(eventIndicator);
-    }
-}
+    const chave = getEventosKey();
+    const eventos = JSON.parse(localStorage.getItem(chave)) || {};
+    const eventosDia = eventos[data] || [];
 
+    container.innerHTML = '';
+    eventosDia.forEach(ev => {
+        const evDiv = document.createElement('div');
+        evDiv.style.backgroundColor = ev.cor || '#4285F4'; 
+        evDiv.style.color = 'white';
+        evDiv.style.fontSize = '10px';
+        evDiv.style.padding = '2px 4px';
+        evDiv.style.borderRadius = '3px';
+        evDiv.style.marginBottom = '2px';
+        evDiv.style.overflow = 'hidden';
+        evDiv.style.whiteSpace = 'nowrap';
+        evDiv.style.textOverflow = 'ellipsis';
+        
+        evDiv.innerText = `${ev.hora}-${ev.horaFim || '...'} ${ev.texto}`;
+        container.appendChild(evDiv);
+    });
+}
 function abrirModalEventos(dataCompleta, dia, mes, ano) {
     const eventos = JSON.parse(localStorage.getItem(getEventosKey())) || {};
     const eventosDoDia = eventos[dataCompleta] || [];
     let modal = document.getElementById('eventos-modal');
-    
+
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'eventos-modal';
@@ -545,56 +555,70 @@ function abrirModalEventos(dataCompleta, dia, mes, ano) {
     }
 
     modal.innerHTML = `
-        <div class="modal-content">
-            <h3>Eventos - ${dia}/${mes + 1}/${ano}</h3>
-            <div id="lista-eventos" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
-                ${eventosDoDia.map((ev, index) => `
-                    <div class="evento-item" style="display: flex; justify-content: space-between; align-items: center; padding: 5px; border-bottom: 1px solid #333;">
-                        <span><strong>${ev.hora}</strong> - ${ev.texto}</span>
-                        <button onclick="removerEvento('${dataCompleta}', ${index})" style="background: #ff4444; border: none; border-radius: 4px; color: white; cursor: pointer;">X</button>
-                    </div>
-                `).join('')}
-                ${eventosDoDia.length === 0 ? '<p style="color: #888;">Nenhum evento agendado.</p>' : ''}
-            </div>
-            <div class="novo-evento" style="display: flex; flex-direction: column; gap: 10px;">
-                <input type="text" id="novo-evento-texto" placeholder="O que vai fazer?">
-                <div style="display: flex; gap: 5px;">
-                    <input type="time" id="novo-evento-hora" value="12:00" style="flex: 1;">
-                    <button onclick="adicionarEvento('${dataCompleta}')" style="flex: 1;">Adicionar</button>
+    <div class="modal-content">
+        <span class="close" onclick="fecharModalEventos()">&times;</span>
+        <h3>Eventos - ${dia}/${mes + 1}/${ano}</h3>
+        <ul id="lista-eventos-dia"></ul>
+        <div class="modal-inputs">
+            <input type="text" id="novo-evento-texto" placeholder="Título do evento">
+            
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <div style="flex: 1;">
+                    <label style="display:block; font-size: 12px;">Início:</label>
+                    <input type="time" id="novo-evento-hora" style="width: 100%;">
+                </div>
+                <div style="flex: 1;">
+                    <label style="display:block; font-size: 12px;">Fim:</label>
+                    <input type="time" id="novo-evento-hora-fim" style="width: 100%;">
                 </div>
             </div>
-            <br>
-            <button onclick="fecharModal()" style="width: 100%; background: #444;">Fechar</button>
+
+            <div style="margin-top: 10px;">
+                <label style="display:block; font-size: 12px;">Cor do Evento:</label>
+                <input type="color" id="novo-evento-cor" value="#4285F4" style="width: 100%; height: 30px; border: none; cursor: pointer;">
+            </div>
+
+            <button onclick="adicionarEvento('${dataISO}')" style="margin-top: 15px;">Adicionar</button>
         </div>
-    `;
-    
+    </div>
+`;
+
     if ("Notification" in window) Notification.requestPermission();
-    
-    modal.style.display = 'flex'; 
+
+    modal.style.display = 'flex';
 }
 
 function adicionarEvento(data) {
     const texto = document.getElementById('novo-evento-texto').value.trim();
-    const hora = document.getElementById('novo-evento-hora').value;
-    
-    if (!texto) return;
-    
-    const eventos = JSON.parse(localStorage.getItem(getEventosKey())) || {};
+    const horaInicio = document.getElementById('novo-evento-hora').value;
+    const horaFim = document.getElementById('novo-evento-hora-fim').value;
+    const cor = document.getElementById('novo-evento-cor').value;
+
+    if (!texto || !horaInicio || !horaFim) {
+        alert("Preencha o título e os horários!");
+        return;
+    }
+
+    const chave = getEventosKey();
+    const eventos = JSON.parse(localStorage.getItem(chave)) || {};
     if (!eventos[data]) eventos[data] = [];
 
-    eventos[data].push({ 
-        texto: texto, 
-        hora: hora, 
-        notificado: false 
+    eventos[data].push({
+        texto: texto,
+        hora: horaInicio,
+        horaFim: horaFim,
+        cor: cor,
+        notificado: false
     });
 
-    salvarNoGoogleAutomatico(texto, data, hora);
-    
+    localStorage.setItem(chave, JSON.stringify(eventos));
+
+    salvarNoGoogleAutomatico(texto, data, horaInicio, horaFim);
+
     const partes = data.split('-');
     abrirModalEventos(data, parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
     generateCalendar();
 }
-
 function removerEvento(data, index) {
     const eventos = JSON.parse(localStorage.getItem(getEventosKey())) || {};
     if (eventos[data]) {
@@ -639,8 +663,10 @@ function generateCalendar() {
     const monthYear = document.getElementById('calendar-month-year');
     if (!calendar || !monthYear) return;
     calendar.innerHTML = '';
+    
     const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
     monthYear.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+    
     const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     daysOfWeek.forEach(day => {
         const header = document.createElement('div');
@@ -648,30 +674,37 @@ function generateCalendar() {
         header.textContent = day;
         calendar.appendChild(header);
     });
+
     const firstDay = new Date(currentYear, currentMonth, 1).getDay();
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
     for (let i = 0; i < firstDay; i++) {
         const emptyDay = document.createElement('div');
         emptyDay.className = 'calendar-day empty';
         calendar.appendChild(emptyDay);
     }
+
     for (let day = 1; day <= daysInMonth; day++) {
         const dayElement = document.createElement('div');
         dayElement.className = 'calendar-day';
         const fullDate = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-        dayElement.setAttribute('data-date', fullDate);
+        
         const dayNumber = document.createElement('div');
         dayNumber.className = 'day-number';
         dayNumber.textContent = day;
         dayElement.appendChild(dayNumber);
+
         const eventsContainer = document.createElement('div');
         eventsContainer.className = 'day-events';
         dayElement.appendChild(eventsContainer);
+
         carregarEventosDoDia(fullDate, eventsContainer);
+
         const today = new Date();
         if (day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
             dayElement.classList.add('current');
         }
+
         dayElement.onclick = () => abrirModalEventos(fullDate, day, currentMonth, currentYear);
         calendar.appendChild(dayElement);
     }
@@ -1067,9 +1100,9 @@ function fecharConfiguracoes() {
 }
 
 window.onload = () => {
-    
+
     inicializarNotificacoes();
-    
+
     loadUserList();
     const currentUser = getCurrentUser();
 
@@ -1133,24 +1166,24 @@ function inicializarNotificacoes() {
 
 setInterval(() => {
     const agora = new Date();
-    
+
     const ano = agora.getFullYear();
     const mes = String(agora.getMonth() + 1).padStart(2, '0');
     const dia = String(agora.getDate()).padStart(2, '0');
     const dataKey = `${ano}-${mes}-${dia}`;
-    
-    const horaAtual = agora.getHours().toString().padStart(2, '0') + ":" + 
-                      agora.getMinutes().toString().padStart(2, '0');
+
+    const horaAtual = agora.getHours().toString().padStart(2, '0') + ":" +
+        agora.getMinutes().toString().padStart(2, '0');
 
     const eventos = JSON.parse(localStorage.getItem(getEventosKey())) || {};
     const eventosDoDia = eventos[dataKey];
 
     if (eventosDoDia) {
         let mudou = false;
-        
+
         eventosDoDia.forEach(ev => {
             if (ev.hora === horaAtual && !ev.notificado) {
-                
+
                 if (Notification.permission === "granted") {
                     new Notification("Lembrete do Codex", {
                         body: ev.texto,
@@ -1171,31 +1204,75 @@ setInterval(() => {
     }
 }, 30000);
 
-async function salvarNoGoogleAutomatico(texto, data, hora) {
+async function salvarNoGoogleAutomatico(texto, data, horaInicio, horaFim) {
     const token = tokenAcesso || localStorage.getItem('google_access_token');
     if (!token) return; 
 
-    const dataInicio = `${data}T${hora}:00`;
-    const dataFim = new Date(new Date(dataInicio).getTime() + 30 * 60000).toISOString().split('.')[0];
-
     const evento = {
         'summary': texto,
-        'description': 'Evento do Keetlio.Note',
-        'start': { 'dateTime': dataInicio, 'timeZone': 'America/Sao_Paulo' },
-        'end': { 'dateTime': dataFim, 'timeZone': 'America/Sao_Paulo' }
+        'start': { 'dateTime': `${data}T${horaInicio}:00`, 'timeZone': 'America/Sao_Paulo' },
+        'end': { 'dateTime': `${data}T${horaFim}:00`, 'timeZone': 'America/Sao_Paulo' }
     };
 
+    await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(evento)
+    });
+}
+
+async function carregarEventosDoGoogle() {
+    const token = tokenAcesso || localStorage.getItem('google_access_token');
+    if (!token) return;
+
     try {
-        await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(evento)
+        const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+            headers: { 'Authorization': `Bearer ${token}` }
         });
-        console.log("Sincronizado com Google Agenda!");
+
+        if (response.ok) {
+            const data = await response.json();
+            const eventosGoogle = data.items;
+            const eventosLocais = JSON.parse(localStorage.getItem(getEventosKey())) || {};
+            let mudou = false;
+
+            eventosGoogle.forEach(ev => {
+                if (ev.start && (ev.start.dateTime || ev.start.date)) {
+                    const dataISO = ev.start.dateTime || ev.start.date;
+                    const dataSimples = dataISO.split('T')[0];
+                    const horaSimples = dataISO.includes('T') ? dataISO.split('T')[1].substring(0, 5) : "00:00";
+
+                    if (!eventosLocais[dataSimples]) eventosLocais[dataSimples] = [];
+
+                    const jaExiste = eventosLocais[dataSimples].some(e => e.texto === ev.summary && e.hora === horaSimples);
+
+                    if (!jaExiste) {
+                        eventosLocais[dataSimples].push({
+                            texto: ev.summary,
+                            hora: horaSimples,
+                            notificado: true
+                        });
+                        mudou = true;
+                    }
+                }
+            });
+
+            if (mudou) {
+                localStorage.setItem(getEventosKey(), JSON.stringify(eventosLocais));
+                generateCalendar();
+                console.log("Eventos do Google sincronizados!");
+            }
+        }
     } catch (err) {
-        console.error("Erro na sincronização:", err);
+        console.error("Erro ao carregar agenda:", err);
     }
 }
+
+window.addEventListener('load', () => {
+    if (localStorage.getItem('google_access_token')) {
+        carregarEventosDoGoogle();
+    }
+});
