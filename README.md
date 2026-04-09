@@ -1,66 +1,68 @@
-# Prova 2 — Portal Restrito com Dashboard Dinâmico - N1
+# Keetlio.Note
+
+Aplicação web de organização pessoal com sistema de login, notas, tarefas e diário.
 
 ## Autor
 
 | Campo | Info |
 |-------|------|
 | **Nome** | Guilherme Espicoz Almeida |
-| **Instituição** | Uniube |
-| **Período** | Matutino |
 
-Aplicação web com controle de acesso e manipulação dinâmica do DOM, desenvolvida com Node.js, Express e JavaScript puro.
+---
 
 ## Sobre o Projeto
 
-O portal exige autenticação via API. Após o login bem-sucedido, o formulário desaparece e um dashboard de boas-vindas é exibido dinamicamente, sem recarregar a página.
+O Keetlio.Note é um sistema de organização pessoal totalmente no navegador, sem necessidade de servidor. Os dados são salvos localmente via `localStorage`. O acesso é protegido por login com cadastro de usuários.
+
+---
 
 ## Tecnologias Utilizadas
 
-- **Node.js** — ambiente de execução do servidor
-- **Express** — framework para criar o servidor web
-- **CORS** — permite comunicação entre frontend e backend local
-- **HTML/CSS/JavaScript** — interface do usuário
+- **HTML5** — estrutura das páginas
+- **CSS3** — estilização e layout
+- **JavaScript** — lógica, manipulação do DOM e armazenamento local
+- **localStorage** — persistência dos dados no navegador
+- **Google Identity API** — integração com Google Agenda
+
+---
 
 ## Estrutura do Projeto
 
 ```
-prova2-portal/
-├── index.html        # Tela de login e dashboard
-├── styles.css        # Estilos da página
-├── server.js         # Servidor Node.js
-└── package.json      # Dependências do projeto
+Keetlio.Note/
+├── login.html       # Tela de login e cadastro de usuários
+├── index.html       # Página principal — tarefas, notas e organização
+├── pagina2.html     # Quadro Branco
+├── pagina3.html     # Diário
+├── pagina4.html     # Contato
+├── pagina5.html     # Atualizações
+├── script.js        # Toda a lógica da aplicação
+└── styles.css       # Estilos da aplicação
 ```
+
+---
 
 ## Como Rodar
 
-**1. Instalar dependências:**
-```bash
-npm install
-```
+Por ser um projeto **100% frontend**, não precisa instalar nada.
 
-**2. Iniciar o servidor:**
-```bash
-node server.js
-```
+1. Baixe ou clone o repositório
+2. Abra o arquivo `login.html` no navegador
+3. Cadastre um usuário e faça login
 
-**3. Abrir o `index.html` no navegador**
+> Nenhum servidor é necessário — tudo roda direto no navegador.
 
-> O servidor roda em `http://localhost:3000`
-
-## Usuários de Teste
-
-| Usuário | Senha |
-|---------|-------|
-| admin   | 123   |
-| gui     | 456   |
+---
 
 ## Funcionalidades
 
-- Login com validação via API
-- Após login bem-sucedido:
-  - Formulário some da tela
-  - Dashboard é exibido dinamicamente com o nome do usuário
-- Retorno de status HTTP corretos:
-  - `200` — login bem-sucedido, retorna o username
-  - `401` — credenciais inválidas
-- Campos com atributo `required` para validação no frontend
+- Login e cadastro de usuários (dados salvos no localStorage)
+- Cada usuário tem seus próprios dados separados
+- Tarefas diárias com sistema de pontos
+- Notas pessoais
+- Tarefas adicionais
+- Quadro Branco para anotações livres
+- Diário pessoal
+- Exportar e importar dados em arquivo
+- Integração com Google Agenda
+- Página de atualizações do sistema
