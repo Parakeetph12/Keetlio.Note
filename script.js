@@ -556,7 +556,7 @@ function abrirModalEventos(dataCompleta, dia, mes, ano) {
 
     modal.innerHTML = `
     <div class="modal-content">
-        <span class="close" onclick="fecharModalEventos()">&times;</span>
+        <span class="close" onclick="fecharModal()">&times;</span>
         <h3>Eventos - ${dia}/${mes + 1}/${ano}</h3>
         <ul id="lista-eventos-dia"></ul>
         <div class="modal-inputs">
@@ -578,7 +578,7 @@ function abrirModalEventos(dataCompleta, dia, mes, ano) {
                 <input type="color" id="novo-evento-cor" value="#4285F4" style="width: 100%; height: 30px; border: none; cursor: pointer;">
             </div>
 
-            <button onclick="adicionarEvento('${dataISO}')" style="margin-top: 15px;">Adicionar</button>
+            <button onclick="adicionarEvento('${dataCompleta}')" style="margin-top: 15px;">Adicionar</button>
         </div>
     </div>
 `;
@@ -1132,10 +1132,6 @@ window.onload = () => {
     aplicarTemaGlobal();
 };
 
-observer.observe(document.body, {
-    childList: true,
-    subtree: true
-});
 
 window.addEventListener('resize', () => {
     if (document.getElementById('drawer-content')?.classList.contains('active')) {
