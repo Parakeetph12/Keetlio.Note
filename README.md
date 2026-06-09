@@ -52,6 +52,10 @@ Por ser um projeto **100% frontend**, não precisa instalar nada.
 
 > Nenhum servidor é necessário — tudo roda direto no navegador.
 
+Pode ser acessado pelo Pages também
+
+https://parakeetph12.github.io/Keetlio.Note/
+
 ---
 
 ## Funcionalidades
