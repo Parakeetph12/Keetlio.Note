@@ -424,11 +424,33 @@ input[type="range"] {
     border: 1px solid #2a2a2a;
     border-radius: 6px;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     font-size: 14px;
     cursor: pointer;
     transition: background-color 0.2s, border-color 0.2s;
+    height: 44px;
+    overflow: hidden;
+    padding: 3px 2px;
+    box-sizing: border-box;
+}
+
+.day-number {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+    flex-shrink: 0;
+}
+
+.day-events {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    justify-content: center;
+    overflow: hidden;
+    max-height: 16px;
+    width: 100%;
 }
 
 .calendar-day:hover {
@@ -481,7 +503,6 @@ input[type="range"] {
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.8);
     z-index: 2000;
-    
     justify-content: center;
     align-items: center;
     backdrop-filter: blur(4px); 
@@ -706,13 +727,12 @@ button.theme-white:hover {
         grid-template-columns: repeat(7, 1fr);
         gap: 1px;
         padding: 5px;
-        min-height: 300px;
         max-width: 100%;
     }
     .calendar-day {
         font-size: 12px;
-        padding: 5px 2px;
-        min-height: 35px;
+        padding: 2px 1px;
+        height: 38px;
     }
     .calendar-header {
         font-size: 11px;
@@ -755,8 +775,8 @@ button.theme-white:hover {
 
     .calendar-day {
         font-size: 10px;
-        min-height: 30px;
-        padding: 3px 1px;
+        height: 32px;
+        padding: 2px 1px;
     }
     .calendar-header {
         font-size: 9px;
